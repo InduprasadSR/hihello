@@ -51,6 +51,17 @@
             font-size: 18px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
         }
+        .instructions {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
         .hidden {
             display: none;
         }
@@ -59,6 +70,7 @@
 <body>
     <div class="greeting" id="greeting"></div>
     <div class="scoreboard" id="scoreboard">Score: 0</div>
+    <div class="instructions">Click on Greetings! to score</div>
     <script>
         let score = 0;
 
@@ -92,7 +104,7 @@
         }
 
         function startBubbles() {
-           const greetings = [
+            const greetings = [
                 "Hi!", "Hello!", "Welcome!", "Hey there!", "Greetings!", "How are you?", "Good to see you!",
                 "Nice day!", "Keep smiling!", "You rock!", "What's up?", "Have fun!", "Cheers!", "Stay awesome!",
                 "¡Hola!", "Bonjour!", "Hallo!", "Ciao!", "こんにちは!", "안녕하세요!", "Привет!", "你好!", "مرحبا!", "नमस्ते!",
@@ -102,7 +114,7 @@
             const nonGreetings = [
                 "123", "@#$", "???", "!!!", "<3", "Nope", "Error", ":)", "-_-", "Wrong", "Test", "Fail", "N/A", "...", "404",
                 "XYZ", "Null", "False", "Oops", "!?!", "@@@", "ZZZ", "1+1", "~!", "QWERTY"
-            ];
+            ]; 
 
             for (let i = 0; i < 10; i++) {
                 const isGreeting = Math.random() > 0.5;
@@ -123,5 +135,6 @@
 
         setTimeout(() => startBubbles(), 3000);
     </script>
+<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="vehowodo" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
 </body>
 </html>
