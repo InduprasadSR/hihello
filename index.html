@@ -40,12 +40,34 @@
             50% { transform: translateY(-100px) scale(1.1); }
             100% { opacity: 0; transform: translateY(-200px) scale(0.9); }
         }
+        .scoreboard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div class="greeting"></div>
+    <div class="greeting" id="greeting"></div>
+    <div class="scoreboard" id="scoreboard">Score: 0</div>
     <script>
-        function generateBubble(text) {
+        let score = 0;
+
+        function updateScore(points) {
+            score += points;
+            document.getElementById('scoreboard').textContent = `Score: ${score}`;
+        }
+
+        function generateBubble(text, isGreeting) {
             const bubble = document.createElement('span');
             bubble.className = 'bubble';
             bubble.textContent = text;
@@ -56,26 +78,45 @@
             bubble.style.top = `${y}px`;
             bubble.style.position = 'absolute';
             greetingDiv.appendChild(bubble);
+
+            bubble.addEventListener('click', () => {
+                if (isGreeting) {
+                    updateScore(10);
+                } else {
+                    updateScore(-5);
+                }
+                bubble.remove();
+            });
+
             setTimeout(() => bubble.remove(), 4000);
         }
 
-        window.addEventListener('load', () => {
+        function startBubbles() {
             const greetings = [
                 "Hi!", "Hello!", "Welcome!", "Hey there!", "Greetings!", "How are you?", "Good to see you!",
                 "Nice day!", "Keep smiling!", "You rock!", "What's up?", "Have fun!", "Cheers!", "Stay awesome!",
                 "¡Hola!", "Bonjour!", "Hallo!", "Ciao!", "こんにちは!", "안녕하세요!", "Привет!", "你好!", "مرحبا!", "नमस्ते!"
             ];
+            const nonGreetings = ["123", "@#$", "???", "!!!", "<3", "Nope", "Error", ":)", "-_-", "Wrong"]; 
 
             for (let i = 0; i < 10; i++) {
-                const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-                generateBubble(randomGreeting);
+                const isGreeting = Math.random() > 0.5;
+                const randomText = isGreeting
+                    ? greetings[Math.floor(Math.random() * greetings.length)]
+                    : nonGreetings[Math.floor(Math.random() * nonGreetings.length)];
+                generateBubble(randomText, isGreeting);
             }
 
             setInterval(() => {
-                const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-                generateBubble(randomGreeting);
+                const isGreeting = Math.random() > 0.5;
+                const randomText = isGreeting
+                    ? greetings[Math.floor(Math.random() * greetings.length)]
+                    : nonGreetings[Math.floor(Math.random() * nonGreetings.length)];
+                generateBubble(randomText, isGreeting);
             }, 1000);
-        });
+        }
+
+        setTimeout(() => startBubbles(), 3000);
     </script>
 </body>
 </html>
