@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catch the Falling Stars game! Move the roller to catch stars and score points before time runs out.">
+    <meta name="keywords" content="falling stars game, interactive game, fun game, browser game, score game, arcade game">
+    <meta name="author" content="Your Name">
+    <title>Catch the Falling Stars</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #001f3f, #0074D9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .roller {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 20px;
+            background: orange;
+            border-radius: 10px;
+        }
+        .star {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: yellow;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+        }
+        .bonus-star {
+            background: gold;
+            box-shadow: 0 0 10px gold;
+        }
+        .scoreboard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+        .timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+        .game-over {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 24px;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="scoreboard">Score: <span id="score">0</span></div>
+        <div class="timer">Time Left: <span id="time">30</span>s</div>
+        <div class="roller" id="roller"></div>
+    </div>
+    <div class="game-over" id="game-over">
+        <div>Game Over! Your final score: <span id="final-score">0</span></div>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+    <script>
+        let score = 0;
+        let timeLeft = 30;
+        let gameInterval;
+        let gameRunning = true;
+        const roller = document.getElementById("roller");
+
+        document.addEventListener("mousemove", (event) => {
+            const x = event.clientX - 50;
+            roller.style.left = `${Math.max(0, Math.min(window.innerWidth - 100, x))}px`;
+        });
+
+        function createStar() {
+            if (!gameRunning) return;
+            const star = document.createElement("div");
+            star.classList.add("star");
+            const isBonus = Math.random() < 0.1;
+            if (isBonus) star.classList.add("bonus-star");
+            
+            star.textContent = isBonus ? "⭐" : "+" + (Math.floor(Math.random() * 10) + 1);
+            star.dataset.points = isBonus ? 50 : parseInt(star.textContent.slice(1));
+            
+            star.style.left = `${Math.random() * (window.innerWidth - 30)}px`;
+            document.body.appendChild(star);
+            moveStar(star);
+        }
+
+        function moveStar(star) {
+            let y = 0;
+            const interval = setInterval(() => {
+                if (!gameRunning) {
+                    clearInterval(interval);
+                    star.remove();
+                    return;
+                }
+                y += 5;
+                star.style.top = `${y}px`;
+                
+                const rollerRect = roller.getBoundingClientRect();
+                const starRect = star.getBoundingClientRect();
+                if (
+                    starRect.bottom >= rollerRect.top &&
+                    starRect.left < rollerRect.right &&
+                    starRect.right > rollerRect.left
+                ) {
+                    score += parseInt(star.dataset.points);
+                    document.getElementById("score").textContent = score;
+                    star.remove();
+                    clearInterval(interval);
+                }
+                
+                if (y > window.innerHeight) {
+                    star.remove();
+                    clearInterval(interval);
+                }
+            }, 50);
+        }
+
+        function startGame() {
+            gameInterval = setInterval(createStar, 700);
+            const countdown = setInterval(() => {
+                timeLeft -= 1;
+                document.getElementById("time").textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    clearInterval(gameInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            document.getElementById("game-over").style.display = "flex";
+            document.getElementById("final-score").textContent = score;
+        }
+
+        function restartGame() {
+            score = 0;
+            timeLeft = 30;
+            gameRunning = true;
+            document.getElementById("score").textContent = score;
+            document.getElementById("time").textContent = timeLeft;
+            document.getElementById("game-over").style.display = "none";
+            startGame();
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
