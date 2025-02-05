@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Brick Breaker Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            background: #222;
+            display: block;
+        }
+        h1 {
+            color: white;
+            position: absolute;
+            top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="score">Score: 0</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        const paddle = {
+            width: 100,
+            height: 10,
+            x: canvas.width / 2 - 50,
+            y: canvas.height - 30,
+            speed: 8,
+            dx: 0
+        };
+
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height - 50,
+            radius: 10,
+            speed: 5,
+            dx: 4,
+            dy: -4
+        };
+
+        let brickRowCount = 5;
+        let brickColumnCount = 8;
+        const brickWidth = 75;
+        const brickHeight = 20;
+        const brickPadding = 10;
+        const brickOffsetTop = 50;
+        const brickOffsetLeft = 30;
+        let bricks = [];
+        
+        let score = 0;
+
+        // Initialize bricks
+        function initBricks() {
+            bricks = [];
+            for (let r = 0; r < brickRowCount; r++) {
+                bricks[r] = [];
+                for (let c = 0; c < brickColumnCount; c++) {
+                    bricks[r][c] = { x: c * (brickWidth + brickPadding) + brickOffsetLeft, 
+                                     y: r * (brickHeight + brickPadding) + brickOffsetTop, 
+                                     status: 1 };
+                }
+            }
+        }
+
+        initBricks();
+
+        function drawPaddle() {
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#f00";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawBricks() {
+            for (let r = 0; r < brickRowCount; r++) {
+                for (let c = 0; c < brickColumnCount; c++) {
+                    if (bricks[r][c].status === 1) {
+                        ctx.fillStyle = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                        ctx.fillRect(bricks[r][c].x, bricks[r][c].y, brickWidth, brickHeight);
+                    }
+                }
+            }
+        }
+
+        function movePaddle() {
+            paddle.x += paddle.dx;
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+        }
+
+        function moveBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
+                ball.dx *= -1;
+            }
+            
+            if (ball.y - ball.radius < 0) {
+                ball.dy *= -1;
+            }
+
+            if (ball.y + ball.radius > canvas.height) {
+                alert("Game Over!");
+                document.location.reload();
+                clearInterval(interval); // Needed for Chrome to end game
+            }
+
+            if (
+                ball.x > paddle.x &&
+                ball.x < paddle.x + paddle.width &&
+                ball.y + ball.radius > paddle.y
+            ) {
+                ball.dy *= -1;
+                score++;
+                document.getElementById("score").innerText = "Score: " + score;
+
+                // Check for level up
+                if (score % (brickRowCount * brickColumnCount) === 0) {
+                    levelUp();
+                }
+            }
+
+            // Collision detection with bricks
+            bricks.forEach(row => {
+                row.forEach(brick => {
+                    if (brick.status === 1) {
+                        if (
+                            ball.x > brick.x &&
+                            ball.x < brick.x + brickWidth &&
+                            ball.y > brick.y &&
+                            ball.y < brick.y + brickHeight
+                        ) {
+                            ball.dy *= -1;
+                            brick.status = 0; // Mark as hit
+                            score += 10; // Increase score
+                            document.getElementById("score").innerText = "Score: " + score;
+                        }
+                    }
+                });
+            });
+        }
+
+        function levelUp() {
+            alert("Level Up!");
+            brickRowCount++;
+            initBricks();
+        }
+
+        function update() {
+            movePaddle();
+            moveBall();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBricks();
+            drawPaddle();
+            drawBall();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            
+           requestAnimationFrame(gameLoop);
+       }
+
+       function keyDown(e) {
+           if (e.key === "ArrowRight") {
+               paddle.dx = paddle.speed;
+           } else if (e.key === "ArrowLeft") {
+               paddle.dx = -paddle.speed;
+           }
+       }
+
+       function keyUp(e) {
+           if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+               paddle.dx = 0;
+           }
+       }
+
+       document.addEventListener("keydown", keyDown);
+       document.addEventListener("keyup", keyUp);
+       gameLoop();
+   </script>
+</body>
+</html>
