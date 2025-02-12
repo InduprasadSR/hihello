@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Click Effect</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            position: relative;
+        }
+        .emoji {
+            position: absolute;
+            font-size: 24px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<h5>Click anywhere on the Screen<h5>
+<script>
+    const emojis = ['😊', '😂', '😍', '😎', '🥳', '👏', '🙌', '🎁', '🎈', '🎉'];
+    const gravity = 0.5;
+    const friction = 0.97;
+    const bounceFactor = -0.7;
+
+    document.addEventListener('click', (event) => {
+        const numEmojis = Math.floor(Math.random() * 10) + 5; // Random number between 5 and 15
+        for (let i = 0; i < numEmojis; i++) {
+            createEmoji(event.clientX, event.clientY);
+        }
+    });
+
+    function createEmoji(x, y) {
+        const emojiDiv = document.createElement('div');
+        emojiDiv.className = 'emoji';
+        emojiDiv.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        emojiDiv.style.left = `${x}px`;
+        emojiDiv.style.top = `${y}px`;
+        document.body.appendChild(emojiDiv);
+
+        let velocityY = -Math.random() * 10 - 5; // Random upward velocity
+        let velocityX = (Math.random() - 0.5) * 10; // Random horizontal velocity
+
+        function animate() {
+            x += velocityX;
+            y += velocityY;
+            velocityY += gravity;
+            velocityX *= friction;
+
+            // Check for collision with bottom boundary
+            if (y + emojiDiv.offsetHeight > window.innerHeight) {
+                y = window.innerHeight - emojiDiv.offsetHeight;
+                velocityY *= bounceFactor;
+            }
+
+            // Check for collision with left and right boundaries
+            if (x < 0) {
+                x = 0;
+                velocityX *= bounceFactor;
+            } else if (x + emojiDiv.offsetWidth > window.innerWidth) {
+                x = window.innerWidth - emojiDiv.offsetWidth;
+                velocityX *= bounceFactor;
+            }
+
+            emojiDiv.style.left = `${x}px`;
+            emojiDiv.style.top = `${y}px`;
+
+            if (y < window.innerHeight || Math.abs(velocityY) > 0.1 || Math.abs(velocityX) > 0.1) {
+                requestAnimationFrame(animate);
+            } else {
+                emojiDiv.remove();
+            }
+        }
+
+        animate();
+    }
+</script>
+</body>
+</html>
