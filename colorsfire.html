@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Fun Page</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #0f0f0f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+        }
+        canvas {
+            border: none;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+        .ribbon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 18px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="ribbon">Click or Type to Create Firecrackers!</div>
+    <canvas id="funCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('funCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationRunning = true;
+        let hue = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function Particle(x, y, hue) {
+            this.x = x;
+            this.y = y;
+            this.size = Math.random() * 5 + 2;
+            this.speedX = Math.random() * 4 - 2;
+            this.speedY = Math.random() * -10 - 5; // Initial upward speed
+            this.gravity = 0.2; // Gravity effect
+            this.hue = hue;
+            this.alpha = 1;
+            this.fadeSpeed = Math.random() * 0.02 + 0.01; // Different fade speeds
+        }
+
+        Particle.prototype.update = function() {
+            this.speedY += this.gravity; // Apply gravity
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.alpha -= this.fadeSpeed; // Fade out effect
+        };
+
+        Particle.prototype.draw = function() {
+            ctx.fillStyle = `hsla(${this.hue}, 100%, 50%, ${this.alpha})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        };
+
+        function createParticles(x, y, hue) {
+            for (let i = 0; i < 40; i++) { // Increased particle count
+                particles.push(new Particle(x, y, hue));
+            }
+        }
+
+        function handleParticleEffects(x, y) {
+            const newHue = Math.floor(Math.random() * 360);
+            createParticles(x, y, newHue);
+        }
+
+        function animate() {
+            if (!animationRunning) return;
+            ctx.fillStyle = 'rgba(15, 15, 15, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].alpha <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        canvas.addEventListener('click', function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            handleParticleEffects(x, y);
+        });
+
+        document.addEventListener('keydown', function(event) {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            handleParticleEffects(x, y);
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animate();
+        animationRunning = true;
+    </script>
+</body>
+</html>
