@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SVG Analog Clock with Set Time</title>
+<style>
+  body {
+    margin: 0;
+    background: linear-gradient(135deg, #e0e0e0, #f9f9f9);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  svg {
+    max-width: 400px;
+    width: 90vmin;
+    height: 90vmin;
+    display: block;
+    margin: 20px auto;
+    background: radial-gradient(circle at center, #fff, #ccc);
+    border-radius: 50%;
+    box-shadow:
+      0 0 30px rgba(0,0,0,0.15),
+      inset 0 0 15px rgba(255,255,255,0.8);
+  }
+  .clock-face {
+    fill: none;
+    stroke: #444;
+    stroke-width: 16px;
+  }
+  .hour-mark {
+    stroke: #444;
+    stroke-width: 4px;
+  }
+  .minute-mark {
+    stroke: #888;
+    stroke-width: 2px;
+  }
+  text.hour-digit {
+    font-family: 'Georgia', serif;
+    font-weight: 700;
+    font-size: 2.5vmin;
+    fill: #222;
+    user-select: none;
+  }
+  .hand {
+    stroke-linecap: round;
+    transform-origin: 50% 50%;
+    transition: transform 0.5s ease-in-out;
+  }
+  .hour-hand {
+    stroke: #222;
+    stroke-width: 8px;
+  }
+  .minute-hand {
+    stroke: #444;
+    stroke-width: 5px;
+  }
+  .second-hand {
+    stroke: #e74c3c;
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 2px #e74c3c);
+  }
+  .center-circle {
+    fill: #222;
+    stroke: #fff;
+    stroke-width: 3px;
+  }
+  .time-setter {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .time-setter label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+    align-self: center;
+  }
+  .time-setter input {
+    width: 60px;
+    padding: 8px;
+    font-size: 1rem;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+  .time-setter input:focus {
+    border-color: #444;
+    outline: none;
+  }
+  .time-setter button {
+    padding: 8px 18px;
+    font-size: 1rem;
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.3s;
+  }
+  .time-setter button:hover {
+    background: #222;
+  }
+</style>
+</head>
+<body>
+
+<svg viewBox="0 0 200 200" aria-label="Analog clock" role="img" id="clock-svg">
+  <circle class="clock-face" cx="100" cy="100" r="90" />
+  
+  <!-- Hour marks -->
+  <g id="hour-marks"></g>
+  <!-- Minute marks -->
+  <g id="minute-marks"></g>
+  <!-- Hour digits -->
+  <g id="hour-digits"></g>
+  
+  <!-- Hands -->
+  <line id="hour-hand" class="hand hour-hand" x1="100" y1="100" x2="100" y2="55" />
+  <line id="minute-hand" class="hand minute-hand" x1="100" y1="100" x2="100" y2="35" />
+  <line id="second-hand" class="hand second-hand" x1="100" y1="105" x2="100" y2="25" />
+  
+  <!-- Center circle -->
+  <circle class="center-circle" cx="100" cy="100" r="6" />
+</svg>
+
+<form class="time-setter" onsubmit="setManualTime(event)" aria-label="Set clock time">
+  <label for="hour-input">Hour (0-23):</label>
+  <input type="number" id="hour-input" min="0" max="23" placeholder="HH" required />
+  <label for="minute-input">Minute (0-59):</label>
+  <input type="number" id="minute-input" min="0" max="59" placeholder="MM" required />
+  <label for="second-input">Second (0-59):</label>
+  <input type="number" id="second-input" min="0" max="59" placeholder="SS" required />
+  <button type="submit">Set Time</button>
+</form>
+
+<script>
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  // Draw hour and minute marks
+  function drawMarks() {
+    const hourMarks = document.getElementById('hour-marks');
+    const minuteMarks = document.getElementById('minute-marks');
+    for (let i = 0; i < 60; i++) {
+      const angle = (i * 6) * Math.PI / 180;
+      const innerRadius = i % 5 === 0 ? 75 : 80;
+      const outerRadius = 90;
+      const x1 = 100 + innerRadius * Math.cos(angle);
+      const y1 = 100 + innerRadius * Math.sin(angle);
+      const x2 = 100 + outerRadius * Math.cos(angle);
+      const y2 = 100 + outerRadius * Math.sin(angle);
+
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('class', i % 5 === 0 ? 'hour-mark' : 'minute-mark');
+      if (i % 5 === 0) hourMarks.appendChild(line);
+      else minuteMarks.appendChild(line);
+    }
+  }
+
+  // Draw hour digits
+  function drawHourDigits() {
+    const digitsGroup = document.getElementById('hour-digits');
+    for (let i = 1; i <= 12; i++) {
+      const angle = ((i - 3) * 30) * Math.PI / 180;
+      const radius = 60;
+      const x = 100 + radius * Math.cos(angle);
+      const y = 100 + radius * Math.sin(angle) + 1.5; // slight vertical adjustment
+
+      const text = document.createElementNS(svgNS, 'text');
+      text.setAttribute('x', x);
+      text.setAttribute('y', y);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('class', 'hour-digit');
+      text.textContent = i;
+      digitsGroup.appendChild(text);
+    }
+  }
+
+  drawMarks();
+  drawHourDigits();
+
+  // Clock hands elements
+  const hourHand = document.getElementById('hour-hand');
+  const minuteHand = document.getElementById('minute-hand');
+  const secondHand = document.getElementById('second-hand');
+
+  // For manual time setting
+  let manualTime = null;
+  let manualTimeSetAt = null;
+
+  function updateClock() {
+    let now;
+    if (manualTime) {
+      // Calculate elapsed seconds since manual time set
+      const elapsed = (Date.now() - manualTimeSetAt) / 1000;
+      now = new Date(manualTime.getTime() + elapsed * 1000);
+    } else {
+      now = new Date();
+    }
+
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds() + now.getMilliseconds() / 1000;
+
+    const hourAngle = ((hours % 12) + minutes / 60) * 30;
+    const minuteAngle = (minutes + seconds / 60) * 6;
+    const secondAngle = seconds * 6;
+
+    hourHand.style.transform = `rotate(${hourAngle}deg)`;
+    minuteHand.style.transform = `rotate(${minuteAngle}deg)`;
+    secondHand.style.transform = `rotate(${secondAngle}deg)`;
+  }
+
+  setInterval(updateClock, 50);
+  updateClock();
+
+  // Handle manual time setting
+  function setManualTime(event) {
+    event.preventDefault();
+    const h = parseInt(document.getElementById('hour-input').value);
+    const m = parseInt(document.getElementById('minute-input').value);
+    const s = parseInt(document.getElementById('second-input').value);
+
+    if (
+      isNaN(h) || h < 0 || h > 23 ||
+      isNaN(m) || m < 0 || m > 59 ||
+      isNaN(s) || s < 0 || s > 59
+    ) {
+      alert('Please enter valid time values.');
+      return;
+    }
+
+    const now = new Date();
+    now.setHours(h, m, s, 0);
+    manualTime = now;
+    manualTimeSetAt = Date.now();
+    updateClock();
+  }
+</script>
+
+</body>
+</html>
