@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Color Code</title>
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    .board {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .box {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      border: 3px solid white;
+      background: #444;
+      border-radius: 10px;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    #hint {
+      font-size: 14px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Color Code</h1>
+  <div class="board" id="board">
+    <!-- boxes will be generated -->
+  </div>
+  <div id="status">Press any key to start...</div>
+  <div id="hint">Use keys: R (Red), G (Green), B (Blue), Y (Yellow)</div>
+
+  <script>
+    const colors = ['red', 'green', 'blue', 'yellow'];
+    const keys = { 'r': 'red', 'g': 'green', 'b': 'blue', 'y': 'yellow' };
+
+    const board = document.getElementById('board');
+    const status = document.getElementById('status');
+
+    let sequence = [];
+    let inputIndex = 0;
+    let level = 1;
+    let acceptingInput = false;
+
+    function generateBox(color) {
+      const box = document.createElement('div');
+      box.className = 'box';
+      box.style.backgroundColor = color;
+      return box;
+    }
+
+    function flashSequence(seq) {
+      board.innerHTML = '';
+      seq.forEach(color => {
+        const box = generateBox(color);
+        board.appendChild(box);
+      });
+
+      // Show for 1.5s then hide
+      setTimeout(() => {
+        board.querySelectorAll('.box').forEach(box => {
+          box.style.backgroundColor = '#444';
+        });
+        acceptingInput = true;
+        status.textContent = `Enter the color sequence (Level ${level})`;
+      }, 1500);
+    }
+
+    function nextLevel() {
+      acceptingInput = false;
+      inputIndex = 0;
+      sequence.push(colors[Math.floor(Math.random() * colors.length)]);
+      flashSequence(sequence);
+    }
+
+    function resetGame(message) {
+      status.textContent = `${message} Final Score: ${level - 1}`;
+      sequence = [];
+      inputIndex = 0;
+      level = 1;
+      acceptingInput = false;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!acceptingInput) {
+        sequence = [];
+        level = 1;
+        nextLevel();
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+      if (!keys[key]) return;
+
+      const expected = sequence[inputIndex];
+      const selected = keys[key];
+
+      if (selected === expected) {
+        inputIndex++;
+        if (inputIndex === sequence.length) {
+          level++;
+          status.textContent = 'Correct! Next level...';
+          setTimeout(nextLevel, 1000);
+        }
+      } else {
+        resetGame('Wrong input! Game over.');
+      }
+    });
+  </script>
+</body>
+</html>
